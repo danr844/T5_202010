@@ -6,17 +6,30 @@ import java.util.Iterator;
 public class TablaHashSeparateChaining <Key extends Comparable<Key>, V extends Comparable<V>>implements ITablaHash<Key, V> 
 {
 	private int M = 97;
-	private Node[] st = new Node[M]; 
-	// array of linked lists (chains)
+	private Node<Key, V>[] st = new Node[M];  	// array of linked lists (chains)
+	private static final int[] PRIMES ={53, 97, 193, 389, 769, 1543, 3079, 6151, 12289, 24593, 49157, 98317, 196613, 393241,786433, 1572869, 3145739, 6291469, 12582917, 25165843, 50331653, 100663319};
 
-	private static class Node
+	private static class Node <Key extends Comparable<Key>, V extends Comparable<V>>
 	{
-		private Object key;
-		private Object val;
-		private Node next;
-		private Node(Object k, Object pval, Node pNext){key = k; val = pval; next = pNext;}
-		public Node darSiguiente(){return next;}
+		private Key key;
+		private V val;
+		private Node<Key, V> next;
+		private Node(Key k, V pval, Node<Key,V> pNext){key = k; val = pval; next = pNext;}
+		public Node<Key, V> darSiguiente(){return next;}
 		public void agregar(Node nuevo){if(next==null)next = nuevo;else next.agregar(nuevo);}
+
+
+		public void cambiarSiguiente(Node<Key, V> pSiguiente)
+		{
+			next = pSiguiente;
+		}
+		public void cambiarValor(V valor)
+		{
+			val= valor;
+		}
+		public V darTvalor(){
+			return val;
+		}
 	}
 	public void put(Key pkey, V val) 
 	{
@@ -29,7 +42,7 @@ public class TablaHashSeparateChaining <Key extends Comparable<Key>, V extends C
 	}
 	private int hash(Key x) 
 	{
-		return (x.hashCode() & 0x7fffffff) % M; 
+		return ((31*x.hashCode()) & 0x7fffffff) % M; 
 	} 
 
 
@@ -44,21 +57,44 @@ public class TablaHashSeparateChaining <Key extends Comparable<Key>, V extends C
 				return (V) x.val; 
 		//si encuentra la clave, retorna valor 
 		return null; //clave no encontrada 
-		
+
 	}
 
 
-public V delete(Key llave) {
-	// TODO Auto-generated method stub
-	return null;
-}
+	public V delete(Key llave) {
+		// TODO Auto-generated method stub
+		int i = hash(llave);
+		Node<Key,V> aEliminar = null;
+		V dato = null;
+
+		//calcula el índice i a partir de la llave
+		for (Node<Key, V> x = st[i]; x != null; x = x.next) 
+			//recorre la lista en i 
+			if (llave.equals(x.next.key)) 
+				aEliminar=x; 
+		if(aEliminar!= null){
+			dato = aEliminar.next.val;
+			aEliminar.cambiarSiguiente(aEliminar.next.next);
+		}
+		return dato;
+	}
+
+	public Iterable<Key> keys1()  {
+        Queue<Key> queue = new Queue<Key>();
+        for (Node x = first; x != null; x = x.next)
+            queue.enqueue(x.key);
+        return queue;
+    }
 
 
-public Iterator<Key> keys() {
-	// TODO Auto-generated method stub
-	return null;
-}
-@Override
+	public Iterable<Key> keys() {
+        Queue<Key> queue = new Queue<Key>();
+        for (int i = 0; i < m; i++) {
+            for (Key key : st[i].keys1())
+                queue.enqueue(key);
+        }
+        return queue;
+    } 
 
 
 }
